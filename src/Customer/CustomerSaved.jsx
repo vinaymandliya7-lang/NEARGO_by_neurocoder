@@ -10,12 +10,13 @@ import {
   Package,
   Search,
   ShoppingBag,
-  Store,User,
+  Store,
   Trash2,
+  User,
   X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { customerProducts, customerShops } from "./customerPages";
+import { customerProducts, customerShops } from "../Customer/CustomerData";
 
 const readJson = (key, fallback) => {
   try {
@@ -87,7 +88,7 @@ const CustomerSaved = () => {
         <section className="mt-8 grid gap-4 border border-[#d7e5dd] bg-[#edf5f2] p-5 sm:grid-cols-[auto_1fr_auto] sm:items-center"><div className="flex h-11 w-11 items-center justify-center bg-[#113b52] text-white"><Store size={20} /></div><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#3b806a]">A little local tip</p><p className="mt-1 text-sm font-semibold leading-6 text-[#315e58]">Before visiting, check the product status—local stock can change during the day.</p></div><button onClick={() => navigate("/Nearby")} className="flex items-center gap-1 text-sm font-bold text-[#b75d17]">Check nearby <ArrowUpRight size={15} /></button></section>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#dfe3de] bg-[#fffdfa]/95 pb-[calc(0.45rem+env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl"><div className="mx-auto flex max-w-xl items-center justify-around"><NavItem icon={<Home />} label="Home" onClick={() => navigate("/CustomerDashboard")} /><NavItem icon={<MapPin />} label="Nearby" onClick={() => navigate("/Nearby")} /><NavItem icon={<Package />} label="Orders" onClick={() => navigate("/CustomerOrders")} /><NavItem icon={<Heart />} label="Saved" active onClick={() => navigate("/CustomerSaved")} /><NavItem icon={<User />} label="Profile" active onClick={() => navigate("/CustomerProfile")} /></div></nav>
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#dfe3de] bg-[#fffdfa]/95 pb-[calc(0.45rem+env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl"><div className="mx-auto flex max-w-xl items-center justify-around"><NavItem icon={<Home />} label="Home" onClick={() => navigate("/CustomerDashboard")} /><NavItem icon={<MapPin />} label="Nearby" onClick={() => navigate("/Nearby")} /><NavItem icon={<Package />} label="Orders" onClick={() => navigate("/CustomerOrders")} /><NavItem icon={<Heart />} label="Saved" active onClick={() => navigate("/CustomerSaved")} /><NavItem icon={<User />} label="Profile" onClick={() => navigate("/CustomerProfile")} /></div></nav>
     </main>
   );
 };

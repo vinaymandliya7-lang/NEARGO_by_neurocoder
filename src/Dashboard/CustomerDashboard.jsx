@@ -11,16 +11,17 @@ import {
   ClipboardList,
   Heart,
   Navigation,
-  X,User,
+  X,
   Check,
   SlidersHorizontal,
   ArrowUpRight,
   Clock3,
   LocateFixed,
+  User,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-
+import SearchBar from "../Customer/Components/SearchBar";
 const products = [
   {
     id: 1,
@@ -133,6 +134,7 @@ const CustomerDashboard = () => {
   const [saved, setSaved] = useState([]);
   const [voiceListening, setVoiceListening] = useState(false);
   const [showAllProducts, setShowAllProducts] = useState(false);
+  const [sort, setSort] = useState("Recommended");
 
   useEffect(() => {
     const storedOrders = JSON.parse(localStorage.getItem("nearGoOrders") || "[]");
@@ -167,8 +169,26 @@ const CustomerDashboard = () => {
       return matchesSearch && matchesCategory;
     });
 
+    if (sort === "Cheapest") result.sort((a, b) => a.price - b.price);
+    if (sort === "Nearest") result.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
+
     return showAllProducts ? result : result.slice(0, 3);
-  }, [search, activeCategory, showAllProducts]);
+  }, [search, activeCategory, showAllProducts, sort]);
+
+  const searchSuggestions = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return [];
+    return products
+      .filter((product) => `${product.name} ${product.category} ${product.shop}`.toLowerCase().includes(query))
+      .slice(0, 5)
+      .map((product) => ({
+        id: product.id,
+        value: product.name,
+        title: product.name,
+        subtitle: `${product.shop} · ${product.distance} · ${product.stock}`,
+        icon: product.emoji,
+      }));
+  }, [search]);
 
   const reserveProduct = (product) => {
     const existingOrders = JSON.parse(localStorage.getItem("nearGoOrders") || "[]");
@@ -228,6 +248,7 @@ const CustomerDashboard = () => {
     setSearch("");
     setActiveCategory("All");
     setShowAllProducts(false);
+    setSort("Recommended");
   };
 
   return (
@@ -236,7 +257,7 @@ const CustomerDashboard = () => {
         <div className="mx-auto max-w-7xl px-5 pb-10 pt-5 sm:px-8 lg:px-12 lg:pb-14">
           <header className="flex items-center justify-between gap-4">
             <button
-              onClick={() => navigate("/Customerdashboard")}
+              onClick={() => navigate("/CustomerDashboard")}
               className="text-left"
               aria-label="Go to customer dashboard"
             >
@@ -277,33 +298,19 @@ const CustomerDashboard = () => {
               </p>
             </div>
 
-            <div>
-              <div className="flex items-center gap-3 border-b border-white/30 pb-2">
-                <Search size={20} className="shrink-0 text-white/60" />
-                <input
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="What are you looking for?"
-                  className="min-w-0 flex-1 bg-transparent py-2 text-base text-white outline-none placeholder:text-white/45"
-                />
-                {search && (
-                  <button onClick={() => setSearch("")} aria-label="Clear search">
-                    <X size={18} className="text-white/60" />
-                  </button>
-                )}
-                <button
-                  onClick={startVoiceSearch}
-                  aria-label="Search by voice"
-                  className={`rounded-full p-2 transition ${voiceListening ? "bg-[#f28a2e] text-white" : "text-white/65 hover:text-white"}`}
-                >
-                  <Mic size={19} />
-                </button>
-              </div>
-              <div className="mt-3 flex items-center justify-between text-xs text-white/50">
-                <span>{voiceListening ? "Listening…" : "Try “LED bulb” or “mobile cable”"}</span>
-                <span className="hidden sm:inline">{filteredProducts.length} nearby options</span>
-              </div>
-            </div>
+            <SearchBar
+              value={search}
+              onChange={setSearch}
+              onClear={() => setSearch("")}
+              onVoiceSearch={startVoiceSearch}
+              voiceListening={voiceListening}
+              resultCount={filteredProducts.length}
+              suggestions={searchSuggestions}
+              onSuggestionSelect={(suggestion) => {
+                setSearch(suggestion.value);
+                navigate(`/Nearby?query=${encodeURIComponent(suggestion.value)}`);
+              }}
+            />
           </div>
         </div>
       </section>
@@ -384,21 +391,23 @@ const CustomerDashboard = () => {
         <section className="mt-12">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#f28a2e]">Live local stock</p>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#f28a2e]">{search ? `Search results for “${search}”` : "Live local stock"}</p>
               <h2 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-[#173d3b] sm:text-4xl">
                 {search || activeCategory !== "All" ? "Matching products" : "Fresh nearby"}
               </h2>
-              <p className="mt-2 text-sm text-[#7c8583]">Available now from shops close to you.</p>
+              <p className="mt-2 text-sm text-[#7c8583]">{filteredProducts.length} options available from shops close to you.</p>
             </div>
-            <button
-              onClick={() => {
-                setShowAllProducts(true);
-                navigate("/Nearby");
-              }}
-              className="hidden items-center gap-1 text-sm font-bold text-[#173d3b] sm:flex"
-            >
-              View all <ArrowUpRight size={16} />
-            </button>
+            <div className="hidden items-center gap-2 sm:flex">
+              {(search || activeCategory !== "All") && <button type="button" onClick={resetFilters} className="text-xs font-bold text-[#b75d17]">Clear filters</button>}
+              <button type="button" onClick={() => { setShowAllProducts(true); navigate("/Nearby"); }} className="items-center gap-1 text-sm font-bold text-[#173d3b]">View all <ArrowUpRight className="inline" size={16} /></button>
+            </div>
+          </div>
+
+          <div className="mt-5 flex flex-col gap-3 border-y border-[#e4e1d9] py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#7c8583]"><SlidersHorizontal size={15} /> Refine your search <span className="font-normal text-[#a4adaa]">{activeCategory !== "All" ? `· ${activeCategory}` : "· all categories"}</span></div>
+            <div className="flex gap-1.5">
+              {["Recommended", "Cheapest", "Nearest"].map((item) => <button type="button" key={item} onClick={() => setSort(item)} className={`border px-2.5 py-1.5 text-[10px] font-bold ${sort === item ? "border-[#113b52] bg-[#113b52] text-white" : "border-[#d7dcd6] bg-[#fffdfa] text-[#7c8583]"}`}>{item}</button>)}
+            </div>
           </div>
 
           <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

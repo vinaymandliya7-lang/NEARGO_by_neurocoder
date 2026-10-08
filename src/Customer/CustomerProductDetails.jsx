@@ -11,7 +11,7 @@ import {
   Store,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import { customerProducts, customerShops } from "./CustomerPages";
+import { customerProducts, customerShops } from "../Customer/CustomerData";
 
 const readJson = (key, fallback) => {
   try {

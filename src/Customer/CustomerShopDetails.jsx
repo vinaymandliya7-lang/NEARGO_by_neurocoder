@@ -10,10 +10,9 @@ import {
   Package,
   Phone,
   Store,
-  User,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import { customerProducts, customerShops } from "./CustomerPages";
+import { customerProducts, customerShops } from "../Customer/CustomerData";
 
 const CustomerShopDetails = () => {
   const navigate = useNavigate();
@@ -185,7 +184,6 @@ const CustomerShopDetails = () => {
           <NavItem icon={<MapPin />} label="Nearby" onClick={() => navigate("/Nearby")} />
           <NavItem icon={<Package />} label="Orders" onClick={() => navigate("/CustomerOrders")} />
           <NavItem icon={<Heart />} label="Saved" onClick={() => navigate("/CustomerSaved")} />
-          <NavItem icon={<User />} label="Profile" onClick={() => navigate("/CustomerProfile")} />
         </div>
       </nav>
     </main>

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -12,16 +12,16 @@ import {
   MapPin,
   Navigation,
   Package,
-  Search,
+  Search,User,
   SlidersHorizontal,
   Sparkles,
   Store,
-  X,User,
+  X,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { customerProducts, customerShops } from "./CustomerPages";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { customerProducts, customerShops } from "./customerData";
 
 const getLocation = () => {
   try {
@@ -60,14 +60,16 @@ const suggestions = [
 
 const Nearby = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const location = getLocation();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(searchParams.get("query") || "");
   const [category, setCategory] = useState("All");
   const [sort, setSort] = useState("Recommended");
   const [saved, setSaved] = useState(readJson("nearGoSaved", []));
   const [selectedShop, setSelectedShop] = useState("sharma-electricals");
   const [mapMode, setMapMode] = useState("Map");
   const [showFilters, setShowFilters] = useState(false);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(true);
 
   const results = useMemo(() => {
     const filtered = customerProducts.filter((product) => {
@@ -85,6 +87,14 @@ const Nearby = () => {
 
   const selectedShopData = customerShops[selectedShop] || customerShops["sharma-electricals"];
   const selectedShopProducts = customerProducts.filter((item) => item.shopId === selectedShop);
+  const matchingShopIds = useMemo(() => new Set(results.map((product) => product.shopId)), [results]);
+  const visibleMapShops = query.trim() ? mapShops.filter((shop) => matchingShopIds.has(shop.id)) : mapShops;
+
+  useEffect(() => {
+    if (visibleMapShops.length > 0 && !visibleMapShops.some((shop) => shop.id === selectedShop)) {
+      setSelectedShop(visibleMapShops[0].id);
+    }
+  }, [query, results.length]);
 
   const toggleSaved = (productId) => {
     const updated = saved.includes(productId)
@@ -162,7 +172,7 @@ const Nearby = () => {
               {["Map", "Satellite"].map((mode) => <button key={mode} onClick={() => setMapMode(mode)} className={`px-3 py-2 text-xs font-bold ${mapMode === mode ? "bg-[#113b52] text-white" : "text-[#7c8583]"}`}>{mode}</button>)}
             </div>
 
-            {mapShops.map((pin) => {
+            {visibleMapShops.map((pin) => {
               const active = selectedShop === pin.id;
               return <button key={pin.id} onClick={() => setSelectedShop(pin.id)} className="absolute z-20 -translate-x-1/2 -translate-y-1/2 text-left" style={{ left: pin.left, top: pin.top }} aria-label={`Show ${pin.label}`}>
                 {active && <span className="absolute -inset-3 animate-ping rounded-full bg-[#f28a2e]/25" />}
@@ -170,6 +180,7 @@ const Nearby = () => {
                 {active && <span className="absolute left-1/2 top-12 -translate-x-1/2 whitespace-nowrap bg-[#113b52] px-2.5 py-1.5 text-[10px] font-bold text-white shadow-md">{pin.label}</span>}
               </button>;
             })}
+            {query && visibleMapShops.length === 0 && <div className="absolute left-1/2 top-1/2 z-20 w-[min(86%,300px)] -translate-x-1/2 -translate-y-1/2 bg-white/95 p-5 text-center shadow-lg"><Search className="mx-auto text-[#7c8583]" size={25} /><p className="mt-3 text-sm font-bold text-[#173d3b]">No shops found for “{query}”</p><button type="button" onClick={() => { setQuery(""); navigate("/Nearby"); }} className="mt-3 text-xs font-bold text-[#b75d17]">Show all nearby shops</button></div>}
 
             <div className="absolute bottom-4 left-4 z-10 flex flex-col gap-2 sm:bottom-5 sm:left-5"><button className="flex h-10 w-10 items-center justify-center bg-white text-[#173d3b] shadow-md" aria-label="Zoom in"><ZoomIn size={18} /></button><button className="flex h-10 w-10 items-center justify-center bg-white text-[#173d3b] shadow-md" aria-label="Zoom out"><ZoomOut size={18} /></button><button className="mt-1 flex h-10 w-10 items-center justify-center bg-[#113b52] text-white shadow-md" onClick={() => navigate("/CustomerLocation")} aria-label="Use current location"><Crosshair size={18} /></button></div>
             <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2 bg-white/90 px-3 py-2 text-[10px] font-bold text-[#567263] shadow-sm sm:bottom-5 sm:right-5"><span className="h-2 w-2 rounded-full bg-[#f28a2e]" /> {mapMode} view · live demo</div>
@@ -177,7 +188,7 @@ const Nearby = () => {
 
           <section className="min-w-0">
             <div className="flex items-end justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#f28a2e]">Picked for you</p><h2 className="mt-2 text-3xl font-semibold tracking-[-0.05em]">Smart suggestions</h2></div><span className="text-xs font-bold text-[#7c8583]">{results.length} results</span></div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">{suggestions.map((item) => <button key={item.title} onClick={() => setQuery(item.query)} className="group flex items-center gap-3 border border-[#e4e1d9] bg-[#fffdfa] p-3 text-left transition hover:border-[#f28a2e] hover:bg-[#fffaf5]"><span className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#fff1e4] text-xl">{item.icon}</span><span className="min-w-0 flex-1"><b className="block truncate text-sm">{item.title}</b><small className="mt-1 block truncate text-xs text-[#7c8583]">{item.text}</small></span><ArrowUpRight size={16} className="shrink-0 text-[#7c8583]" /></button>)}</div>
+            <button type="button" onClick={() => setSuggestionsOpen(true)} className="mt-4 flex w-full items-center justify-between border border-[#e4e1d9] bg-[#fffdfa] p-4 text-left transition hover:border-[#f28a2e]"><span className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center bg-[#fff1e4] text-xl">✨</span><span><b className="block text-sm">Smart suggestions</b><small className="mt-1 block text-xs text-[#7c8583]">Tap to see ideas picked for you</small></span></span><ArrowUpRight size={17} className="text-[#b75d17]" /></button>
 
             <div className="mt-7 border border-[#d8e0d9] bg-[#edf5f2] p-4 sm:p-5"><div className="flex items-start gap-3"><Sparkles size={19} className="mt-0.5 shrink-0 text-[#f28a2e]" /><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#3b806a]">Near-Go insight</p><p className="mt-2 text-sm font-semibold leading-6 text-[#315e58]">{selectedShopData.name} is the closest shop with {selectedShopProducts[0]?.name || "fresh stock"} available.</p><button onClick={() => navigate(`/CustomerShopDetails/${selectedShop}`)} className="mt-3 text-xs font-bold text-[#b75d17]">Open shop profile <ChevronRight className="inline" size={14} /></button></div></div></div>
 
@@ -186,6 +197,26 @@ const Nearby = () => {
           </section>
         </div>
       </div>
+
+      {suggestionsOpen && (
+        <>
+          <div className="fixed inset-0 z-[55] bg-[#102a36]/15" onClick={() => setSuggestionsOpen(false)} />
+          <section className="fixed inset-x-3 bottom-[5.4rem] z-[60] mx-auto max-w-2xl overflow-hidden border border-[#d7e5dd] bg-[#fffdfa] shadow-[0_20px_55px_rgba(17,59,82,0.24)] sm:inset-x-auto sm:bottom-24 sm:w-[min(92vw,620px)]">
+            <div className="flex items-start justify-between gap-4 bg-[#113b52] px-5 py-4 text-white sm:px-6">
+              <div className="flex items-start gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#f28a2e] text-xl">✨</span><div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#f5b77b]">Near-Go assist</p><h3 className="mt-1 text-lg font-semibold">Smart suggestions for you</h3><p className="mt-1 text-xs text-white/60">Choose an idea and we’ll show every matching shop on the map.</p></div></div>
+              <button type="button" onClick={() => setSuggestionsOpen(false)} className="rounded-full p-2 text-white/70 hover:bg-white/10 hover:text-white" aria-label="Close smart suggestions"><X size={18} /></button>
+            </div>
+            <div className="grid gap-2 p-3 sm:grid-cols-3 sm:p-4">
+              {suggestions.map((item) => (
+                <button type="button" key={item.title} onClick={() => { setQuery(item.query); setSuggestionsOpen(false); }} className="group flex items-center gap-3 border border-[#e7e5de] bg-[#fffdfa] p-3 text-left transition hover:border-[#f28a2e] hover:bg-[#fff7ef]">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#fff1e4] text-xl">{item.icon}</span><span className="min-w-0 flex-1"><b className="block truncate text-sm">{item.title}</b><small className="mt-1 block truncate text-xs text-[#7c8583]">{item.text}</small></span><ArrowUpRight size={15} className="shrink-0 text-[#b75d17]" />
+                </button>
+              ))}
+            </div>
+          </section>
+        </>
+      )}
+      {!suggestionsOpen && <button type="button" onClick={() => setSuggestionsOpen(true)} className="fixed bottom-[5.6rem] right-4 z-[60] flex items-center gap-2 bg-[#113b52] px-4 py-3 text-xs font-bold text-white shadow-lg sm:bottom-24 sm:right-6"><Sparkles size={15} className="text-[#f5b77b]" /> Suggestions</button>}
 
       <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#dfe3de] bg-[#fffdfa]/95 pb-[calc(0.45rem+env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl"><div className="mx-auto flex max-w-xl items-center justify-around"><NavItem icon={<Home />} label="Home" onClick={() => navigate("/CustomerDashboard")} /><NavItem icon={<MapPin />} label="Nearby" active onClick={() => navigate("/Nearby")} /><NavItem icon={<Package />} label="Orders" onClick={() => navigate("/CustomerOrders")} /><NavItem icon={<Heart />} label="Saved" onClick={() => navigate("/CustomerSaved")} /><NavItem icon={<User />} label="Profile" onClick={() => navigate("/CustomerProfile")} /></div></nav>
     </main>

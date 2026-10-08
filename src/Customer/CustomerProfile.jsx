@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import BottomNavigation from "./components/BottomNavigation";
 
 const readStorage = (storage, key, fallback) => {
   try {
@@ -163,7 +164,14 @@ const CustomerProfile = () => {
         <button type="button" onClick={() => navigate("/")} className="mx-auto mt-8 flex items-center gap-2 text-sm font-bold text-[#8a5c50]"><LogOut size={16} /> Sign out</button>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#dfe3de] bg-[#fffdfa]/95 pb-[calc(0.45rem+env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl"><div className="mx-auto flex max-w-xl items-center justify-around"><NavItem icon={<Home />} label="Home" onClick={() => navigate("/CustomerDashboard")} /><NavItem icon={<MapPin />} label="Nearby" onClick={() => navigate("/Nearby")} /><NavItem icon={<Package />} label="Orders" onClick={() => navigate("/CustomerOrders")} /><NavItem icon={<Heart />} label="Saved" active onClick={() => navigate("/CustomerSaved")} /><NavItem icon={<User />} label="Profile" active onClick={() => navigate("/CustomerProfile")} /></div></nav>
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#dfe3de] bg-[#fffdfa]/95 pb-[calc(0.45rem+env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl"><div className="mx-auto flex max-w-xl items-center justify-around"><NavItem icon={<Home />} label="Home" onClick={() => navigate("/CustomerDashboard")} /><NavItem icon={<MapPin />} label="Nearby" onClick={() => navigate("/Nearby")} /><NavItem icon={<Package />} label="Orders" onClick={() => navigate("/CustomerOrders")} /><NavItem icon={<User />} label="Profile" active onClick={() => navigate("/CustomerProfile")} />
+      <BottomNavigation
+  icon={<Heart />}
+  label="Saved"
+  active
+  onClick={() => navigate("/CustomerSaved")}
+/>
+</div></nav>
     </main>
   );
 };

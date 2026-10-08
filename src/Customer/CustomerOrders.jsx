@@ -18,7 +18,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { customerProducts, customerShops } from "./customerPages";
+import { customerProducts, customerShops } from "../Customer/CustomerData";
 
 const readOrders = () => {
   try {
