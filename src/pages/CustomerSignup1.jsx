@@ -210,7 +210,7 @@ const CustomerSignup1 = () => {
             <div className="w-11 h-11 rounded-xl bg-[#083b4d] p-2">
 
               <img
-                src={logo}
+                src={logo}  
                 alt="NEAR-GO"
                 className="w-full h-full object-contain"
               />

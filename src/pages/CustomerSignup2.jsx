@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import icon1 from "../assets/favicon.png";
 import icon2 from "../assets/images.svg";
+import { Link } from "react-router-dom";
 
 const CustomerSignup2 = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -296,7 +297,8 @@ const CustomerSignup2 = () => {
               </div>
 
               {/* Continue Button */}
-              <button
+              <Link
+              to="/Location"
                 type="button"
                 disabled={
                   password.length < 8 ||
@@ -313,7 +315,7 @@ const CustomerSignup2 = () => {
                   size={20}
                   className="transition-transform duration-200 group-hover:translate-x-1"
                 />
-              </button>
+              </Link>
 
               {/* Security Note */}
               <div className="flex items-center justify-center gap-2 pt-2 text-center text-xs text-gray-400">

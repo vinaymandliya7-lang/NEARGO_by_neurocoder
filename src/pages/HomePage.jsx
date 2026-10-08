@@ -60,7 +60,7 @@ function HomePage() {
 
           {/* Shopkeeper */}
           <Link
-            to="/ShopkeeperLogin"
+            to="/ShopkeeperSignup"
             className="flex items-center justify-center gap-3 w-full h-12 bg-zinc-100 text-blue-500 font-bold rounded-full mt-2 border-2 border-blue-200"
           >
             <BsShop size={20} color="blue" />

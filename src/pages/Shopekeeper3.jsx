@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,Link } from "react-router-dom";
 import {
   ArrowRight,
   CheckCircle2,
@@ -65,7 +65,7 @@ const Shopekeeper3 = () => {
     sessionStorage.setItem("nearGoShopkeeperVerified", "true");
 
     setTimeout(() => {
-      navigate("/ShopkeeperSuccess");
+      navigate("/location_shopkeeper");
     }, 1000);
   };
 
@@ -268,14 +268,14 @@ const Shopekeeper3 = () => {
                       </span>
                     </p>
                   ) : (
-                    <button
-                      type="button"
+                    <Link
+                      to='/location_shopkeeper'
                       onClick={handleResend}
                       className="inline-flex items-center gap-2 text-sm font-bold text-[#16aaa8] transition hover:text-[#0b2940]"
                     >
                       <RefreshCw size={16} />
                       Resend OTP
-                    </button>
+                    </Link>
                   )}
                 </div>
 
